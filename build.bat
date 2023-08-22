@@ -1,0 +1,1 @@
+go build -ldflags "-H=windowsgui" -o ./bin/qianghua.exe ./src/main.go

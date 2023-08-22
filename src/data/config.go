@@ -28,10 +28,11 @@ var defaultConfig = &Config{
 	ExtraMaxCount:      1,
 }
 
-var CfgPath = "./cache/config.json"
+var CachePath = "./cache"
+var CfgFileName = "config.json"
 
 func ReadConfig() (*Config, error) {
-	f, er := os.Open(CfgPath)
+	f, er := os.Open(CachePath + "/" + CfgFileName)
 	if er != nil {
 		return defaultConfig, nil //默认文件
 	}
@@ -57,10 +58,17 @@ func SaveConfig(cfg *Config) error {
 		return nil
 	}
 
-	f, er := os.OpenFile(CfgPath, os.O_WRONLY|os.O_CREATE, 0766)
+	er := os.MkdirAll(CachePath, os.ModePerm)
 	if er != nil {
 		return er
 	}
+
+	f, er := os.OpenFile(CachePath+"/"+CfgFileName, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	if er != nil {
+		return er
+	}
+
+	defer f.Close()
 
 	data, er := json.MarshalIndent(cfg, "", "    ")
 	if er != nil {
