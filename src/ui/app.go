@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
@@ -23,9 +24,8 @@ type MyApp struct {
 	outC    *container.Scroll
 	outList *fyne.Container
 
-	cfgData       *data.Config
-	simulateCount int
-	init          bool
+	cfgData *data.Config
+	init    bool
 }
 
 func NewApp() *MyApp {
@@ -88,15 +88,11 @@ func (a *MyApp) saveData() {
 	if er != nil {
 		fmt.Println(er.Error())
 	}
-
-	a.uiApp.Preferences().SetInt("simulateCount", a.simulateCount)
 }
 
 func (a *MyApp) createOpeBlock() {
-	a.simulateCount = a.uiApp.Preferences().IntWithFallback("simulateCount", 1)
-
 	a.opeC = container.NewHBox(
-		NewEntryWithLabel("模拟次数：", &a.simulateCount, nil),
+		NewEntryWithLabel("模拟次数：", binding.BindPreferenceInt("simulateCount", a.uiApp.Preferences()), nil),
 		widget.NewButton("计算期望", a.onBtnCalcExpectation),
 		widget.NewButton("模拟强化", a.onBtnSimulate),
 		layout.NewSpacer(),
@@ -116,12 +112,17 @@ func (a *MyApp) onBtnCalcExpectation() {
 }
 
 func (a *MyApp) onBtnSimulate() {
+	count := a.uiApp.Preferences().Int("simulateCount")
+	if count <= 0 {
+		return
+	}
+
 	//裸强
-	c1, f1 := SimulateN(a.cfgData.BaseProbability, a.cfgData.FailAddProbability, a.cfgData.BaseFee, a.cfgData.MaxCount, a.simulateCount)
+	c1, f1 := SimulateN(a.cfgData.BaseProbability, a.cfgData.FailAddProbability, a.cfgData.BaseFee, a.cfgData.MaxCount, count)
 
 	//保护材料
 	c2, f2 := SimulateN(a.cfgData.BaseProbability+a.cfgData.ExtraProbability, a.cfgData.FailAddProbability,
-		a.cfgData.BaseFee+a.cfgData.ExtraFee, a.cfgData.ExtraMaxCount, a.simulateCount)
+		a.cfgData.BaseFee+a.cfgData.ExtraFee, a.cfgData.ExtraMaxCount, count)
 
 	a.addOutString("        平均次数    平均费用\n裸强：  %1.2f        %.2f\n保护：  %1.2f        %.2f",
 		c1, f1, c2, f2)

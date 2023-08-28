@@ -21,6 +21,12 @@ func NewEntryWithLabel(name string, value interface{}, onSubmitted func(string))
 		data = binding.BindString(v)
 	case *int:
 		data = binding.IntToString(binding.BindInt(v))
+	case binding.String:
+		data = v
+	case binding.Int:
+		data = binding.IntToString(v)
+	case binding.Float:
+		data = binding.FloatToString(v)
 	default:
 
 	}

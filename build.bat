@@ -1,1 +1,1 @@
-go build -ldflags "-H=windowsgui" -o ./bin/qianghua.exe ./src/main.go
+go build -ldflags "-H=windowsgui" -o ./bin/qianghua.exe -mod=vendor ./src/main.go
