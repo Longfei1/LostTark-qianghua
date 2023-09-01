@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 )
@@ -32,22 +33,31 @@ var CachePath = "./cache"
 var CfgFileName = "config.json"
 
 func ReadConfig() (*Config, error) {
+	formatErr := func(s string, args ...interface{}) error {
+		r := fmt.Sprintf(s, args)
+		return fmt.Errorf("路径：%v\n 原因：%v\n将使用默认参数", CachePath+"/"+CfgFileName, r)
+	}
+
 	f, er := os.Open(CachePath + "/" + CfgFileName)
 	if er != nil {
-		return defaultConfig, nil //默认文件
+		if os.IsNotExist(er) {
+			return defaultConfig, nil
+		} else {
+			return defaultConfig, formatErr("打开文件错误[%v]", er.Error()) //默认文件
+		}
 	}
 
 	defer f.Close()
 
 	data, er := io.ReadAll(f)
 	if er != nil {
-		return nil, er
+		return defaultConfig, formatErr("文件读取错误[%v]", er.Error()) //默认文件
 	}
 
 	cfg := &Config{}
 	er = json.Unmarshal(data, cfg)
 	if er != nil {
-		return nil, er
+		return defaultConfig, formatErr("文件解析错误[%v]", er.Error()) //默认文件
 	}
 
 	return cfg, nil
@@ -63,7 +73,7 @@ func SaveConfig(cfg *Config) error {
 		return er
 	}
 
-	f, er := os.OpenFile(CachePath+"/"+CfgFileName, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	f, er := os.OpenFile(CachePath+"/"+CfgFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if er != nil {
 		return er
 	}

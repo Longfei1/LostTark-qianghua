@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
@@ -35,15 +36,16 @@ func NewApp() *MyApp {
 }
 
 func (a *MyApp) Init() {
-	cfgData, er := data.ReadConfig()
-	if er != nil {
-		panic(er.Error())
-	}
+	cfgData, cfgErr := data.ReadConfig()
 	a.cfgData = cfgData
 
 	a.createFrame()
 
 	a.init = true
+
+	if cfgErr != nil {
+		dialog.ShowInformation("读取缓存失败", cfgErr.Error(), a.frameW)
+	}
 }
 
 func (a *MyApp) createFrame() {

@@ -1,0 +1,9 @@
+{
+    "BaseProbability": 0.1,
+    "BaseFee": 1000,
+    "MaxCount": 15,
+    "ExtraProbability": 0.1,
+    "ExtraFee": 1800,
+    "ExtraMaxCount": 10,
+    "FailAddProbability": 0.01
+}
